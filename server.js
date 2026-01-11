@@ -28,19 +28,36 @@ app.get("/webhook", (req, res) => {
 // ------------------------------
 app.post("/reply", async (req, res) => {
   const { number, replyMessage } = req.body;
-  const phoneId = process.env.PHONE_NUMBER_ID; // Ensure this is in your .env
+  
+  // 1. Ensure these are set in your Render Environment Variables
+  const phoneId = process.env.PHONE_NUMBER_ID; 
+  const token = process.env.WHATSAPP_TOKEN;
+
+  if (!phoneId || !token) {
+    return res.status(500).json({ 
+      success: false, 
+      error: "Server configuration missing: PHONE_NUMBER_ID or WHATSAPP_TOKEN" 
+    });
+  }
 
   try {
-    await axios.post(`https://graph.facebook.com/v21.0/${phoneId}/messages`, {
-      messaging_product: "whatsapp",
-      to: number,
-      type: "text",
-      text: { body: replyMessage }
-    }, { 
-      headers: { Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}` } 
-    });
+    const response = await axios.post(
+      `https://graph.facebook.com/v21.0/${phoneId}/messages`, 
+      {
+        messaging_product: "whatsapp",
+        recipient_type: "individual",
+        to: number,
+        type: "text",
+        text: { body: replyMessage }
+      }, 
+      { 
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        } 
+      }
+    );
 
-    // Log the manual reply so it appears in the UI
     messagesLog.push({ 
       name: "Admin", 
       number: number, 
@@ -50,9 +67,14 @@ app.post("/reply", async (req, res) => {
 
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    // This logs the SPECIFIC Meta error (e.g., "Template needed" or "Invalid Number")
+    console.error("Meta API Error Details:", err.response?.data || err.message);
+    res.status(400).json({ 
+      success: false, 
+      error: err.response?.data?.error?.message || err.message 
+    });
   }
-}); 
+});
 
 app.post("/webhook", async (req, res) => {
   res.sendStatus(200);
@@ -94,7 +116,8 @@ app.post("/webhook", async (req, res) => {
         name: value.contacts?.[0]?.profile?.name || "Guest",
         number: phone,
         message: userMessage,
-        replyStatus: replyStatus
+        replyStatus: replyStatus,
+        phoneId: phoneId
       });
     }
   } catch (err) {
