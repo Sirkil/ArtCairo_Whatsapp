@@ -183,39 +183,48 @@
   </div>
 
   <script>
+    let messagesData = [];
     let selectedNumber = null;
 
-    async function fetchLogs() {
-    const response = await fetch('/messages');
-    const logs = await response.json();
-    const tableBody = document.getElementById('logTableBody');
-    tableBody.innerHTML = logs.map(log => `
-        <tr>
-            <td>${log.name}</td>
-            <td>${log.number}</td>
-            <td>${log.message}</td>
-            <td>${log.replyStatus}</td>
-        </tr>
-    `).join('');
-}
-setInterval(fetchLogs, 5000); // Refresh every 5 seconds
+    async function fetchMessages() {
+  const response = await fetch('/messages');
+  messagesData = await response.json();
+  
+  // 1. Update the sidebar list
+  const messageList = document.getElementById('messageList');
+  const uniqueContacts = [...new Map(messagesData.map(m => [m.number, m])).values()];
+  
+  messageList.innerHTML = uniqueContacts.map(m => `
+    <li class="message-item ${selectedNumber === m.number ? 'active' : ''}" 
+        onclick="selectConversation('${m.number}', '${m.name}')">
+      <div class="name">${m.name}</div>
+      <div class="phone">${m.number}</div>
+    </li>
+  `).join('');
 
-    function selectConversation(number, name, messages) {
-      selectedNumber = number;
-      document.getElementById('chatHeader').textContent = `${name} (${number})`;
-      const chatMessages = document.getElementById('chatMessages');
-      chatMessages.innerHTML = '';
-      messages.forEach(msg => {
-        const div = document.createElement('div');
-        div.className = `message ${msg.replyStatus !== 'Logged Only' ? 'sent' : 'received'}`;
-        div.textContent = msg.message;
-        chatMessages.appendChild(div);
-      });
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-      document.querySelectorAll('.message-item').forEach(item => item.classList.remove('active'));
-      const selectedItem = [...document.querySelectorAll('.message-item')].find(item => item.querySelector('.phone').textContent === number);
-      if (selectedItem) selectedItem.classList.add('active');
-    }
+  // 2. If a conversation is open, refresh the chat bubbles
+  if (selectedNumber) {
+    renderChat(selectedNumber);
+  }
+}
+
+function selectConversation(number, name) {
+  selectedNumber = number;
+  document.getElementById('chatHeader').textContent = `${name} (${number})`;
+  renderChat(number);
+}
+
+function renderChat(number) {
+  const chatMessages = document.getElementById('chatMessages');
+  const filtered = messagesData.filter(m => m.number === number);
+  
+  chatMessages.innerHTML = filtered.map(msg => `
+    <div class="message ${msg.replyStatus.startsWith('Sent') ? 'sent' : 'received'}">
+      ${msg.message}
+    </div>
+  `).join('');
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
 
     async function sendReply() {
       if (!selectedNumber) {

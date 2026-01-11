@@ -26,6 +26,34 @@ app.get("/webhook", (req, res) => {
 // ------------------------------
 // 2) Webhook Receiver
 // ------------------------------
+app.post("/reply", async (req, res) => {
+  const { number, replyMessage } = req.body;
+  const phoneId = process.env.PHONE_NUMBER_ID; // Ensure this is in your .env
+
+  try {
+    await axios.post(`https://graph.facebook.com/v21.0/${phoneId}/messages`, {
+      messaging_product: "whatsapp",
+      to: number,
+      type: "text",
+      text: { body: replyMessage }
+    }, { 
+      headers: { Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}` } 
+    });
+
+    // Log the manual reply so it appears in the UI
+    messagesLog.push({ 
+      name: "Admin", 
+      number: number, 
+      message: replyMessage, 
+      replyStatus: "Sent Manually" 
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+}); 
+
 app.post("/webhook", async (req, res) => {
   res.sendStatus(200);
   const entry = req.body?.entry?.[0];
