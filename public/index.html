@@ -185,30 +185,20 @@
   <script>
     let selectedNumber = null;
 
-    async function fetchMessages() {
-      try {
-        const response = await fetch('/messages');
-        const messages = await response.json();
-        const messageList = document.getElementById('messageList');
-        messageList.innerHTML = '';
-        const uniqueNumbers = [...new Set(messages.map(m => m.number))];
-        uniqueNumbers.forEach(number => {
-          const userMessages = messages.filter(m => m.number === number);
-          const latestMessage = userMessages[userMessages.length - 1];
-          const li = document.createElement('li');
-          li.className = 'message-item';
-          li.innerHTML = `
-            <div class="name">${latestMessage.name}</div>
-            <div class="phone">${number}</div>
-            <div class="preview">${latestMessage.message}</div>
-          `;
-          li.onclick = () => selectConversation(number, latestMessage.name, userMessages);
-          messageList.appendChild(li);
-        });
-      } catch (err) {
-        console.error('Error fetching messages:', err);
-      }
-    }
+    async function fetchLogs() {
+    const response = await fetch('/messages');
+    const logs = await response.json();
+    const tableBody = document.getElementById('logTableBody');
+    tableBody.innerHTML = logs.map(log => `
+        <tr>
+            <td>${log.name}</td>
+            <td>${log.number}</td>
+            <td>${log.message}</td>
+            <td>${log.replyStatus}</td>
+        </tr>
+    `).join('');
+}
+setInterval(fetchLogs, 5000); // Refresh every 5 seconds
 
     function selectConversation(number, name, messages) {
       selectedNumber = number;
