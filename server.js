@@ -91,7 +91,7 @@ async function sendQrMessage(to, phoneId, qrData, caption, frameFileName) {
     // 1. Generate QR Code Buffer
     // Reduced to 600 to give a small safety margin inside the white area
     const qrBuffer = await QRCode.toBuffer(qrData, {
-      width: 680, 
+      width: 720, 
       margin: 2,
       color: {
         dark: '#000000',
@@ -111,7 +111,7 @@ async function sendQrMessage(to, phoneId, qrData, caption, frameFileName) {
     .composite([
       { 
         input: qrBuffer, 
-        top: 235,  // Adjusted slightly to center in your specific frame
+        top: 230,  // Adjusted slightly to center in your specific frame
         left: 200 
       },
       { 
