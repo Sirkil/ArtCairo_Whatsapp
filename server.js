@@ -91,7 +91,7 @@ async function sendQrMessage(to, phoneId, qrData, caption, frameFileName) {
 
     // 1. Generate QR Code Buffer
     const qrBuffer = await QRCode.toBuffer(qrData, {
-      width: 250, // Size of the QR code
+      width: 680, // Size of the QR code
       margin: 1,
       color: {
         dark: '#000000',
