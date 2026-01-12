@@ -111,8 +111,8 @@ async function sendQrMessage(to, phoneId, qrData, caption, frameFileName) {
     .composite([
       { 
         input: qrBuffer, 
-        top: 72,  // Position the QR code
-        left: 72 
+        top: 70,  // Position the QR code
+        left: 70 
       },
       { 
         input: framePath, // Frame is added LAST, making it the top layer
