@@ -44,7 +44,7 @@ app.post("/webhook", async (req, res) => {
     if (userMessage === "Attending") {
       const qrValue = `${phone}-1`;
       // Uses the first frame for the primary attendee
-      await sendQrMessage(phone, phoneId, qrValue, "Thank you! Here is your QR code.", "Qr Code Frame.png");
+      await sendQrMessage(phone, phoneId, qrValue, "Thank you! Here is your QR code.", "QrCodeFrame.png");
       
       setTimeout(() => sendPlusOneButton(phone, phoneId), 2000);
       replyStatus = "Sent QR 1 + PlusOne Button";
@@ -52,7 +52,7 @@ app.post("/webhook", async (req, res) => {
     else if (userMessage === "+1") {
       const qrValue = `${phone}-2`;
       // Uses the second frame for the guest
-      await sendQrMessage(phone, phoneId, qrValue, "Here is your guest QR code!", "Qr Code Frame.png");
+      await sendQrMessage(phone, phoneId, qrValue, "Here is your guest QR code!", "QrCodeFrame.png");
       replyStatus = "Sent QR 2 (Guest)";
     }
 
