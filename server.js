@@ -112,7 +112,7 @@ async function sendQrMessage(to, phoneId, qrData, caption, frameFileName) {
       { 
         input: qrBuffer, 
         top: 250,  // Adjusted slightly to center in your specific frame
-        left: 250 
+        left: 235 
       },
       { 
         input: framePath, 
