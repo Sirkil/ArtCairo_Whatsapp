@@ -3,17 +3,18 @@ const fs = require("fs");
 const path = require("path");
 const axios = require("axios");
 const QRCode = require('qrcode');
-const sharp = require('sharp'); // New library for image layering
+const sharp = require('sharp'); 
 require("dotenv").config();
 
 const app = express();
 app.use(express.json());
-app.use(express.static('public'));
+// Serve the public folder so WhatsApp can access the generated images
+app.use(express.static('public')); 
 
 const GSHEET_WEBHOOK_URL = process.env.GSHEET_WEBHOOK_URL;
 const messagesLog = [];
 
-// 1) Webhook Verification (Unchanged)
+// 1) Webhook Verification
 app.get("/webhook", (req, res) => {
   if (req.query["hub.verify_token"] === process.env.VERIFY_TOKEN) {
     res.send(req.query["hub.challenge"]);
@@ -42,7 +43,7 @@ app.post("/webhook", async (req, res) => {
   try {
     if (userMessage === "Attending") {
       const qrValue = `${phone}-1`;
-      // Pass 'QrCodeFrameA1.png' for the first user
+      // Uses the first frame for the primary attendee
       await sendQrMessage(phone, phoneId, qrValue, "Thank you! Here is your QR code.", "QrCodeFrameA1.png");
       
       setTimeout(() => sendPlusOneButton(phone, phoneId), 2000);
@@ -50,7 +51,7 @@ app.post("/webhook", async (req, res) => {
     } 
     else if (userMessage === "+1") {
       const qrValue = `${phone}-2`;
-      // Pass 'QrCodeFrameA2.png' for the guest
+      // Uses the second frame for the guest
       await sendQrMessage(phone, phoneId, qrValue, "Here is your guest QR code!", "QrCodeFrameA2.png");
       replyStatus = "Sent QR 2 (Guest)";
     }
@@ -76,37 +77,52 @@ app.post("/webhook", async (req, res) => {
   });
 });
 
-// ------------------------------
-// 3) Helper: Generate, Layer & Send QR
-// ------------------------------
+// ------------------------------------------------
+// 3) Helper: Generate, Layer (Background -> QR -> Frame)
+// ------------------------------------------------
 async function sendQrMessage(to, phoneId, qrData, caption, frameFileName) {
   const fileName = `ticket_${qrData}_${Date.now()}.png`;
   const filePath = path.join(__dirname, 'public', fileName);
   const framePath = path.join(__dirname, 'assets', frameFileName);
   
   try {
-    // 1. Generate QR Code as a Buffer (not a file yet)
-    // We make it slightly smaller than the frame to fit in the white area
+    // Get frame dimensions to ensure the background canvas matches perfectly
+    const frameMetadata = await sharp(framePath).metadata();
+
+    // 1. Generate QR Code Buffer
     const qrBuffer = await QRCode.toBuffer(qrData, {
-      width: 240, // Adjust this size to fit your frame's white box
-      margin: 0,
+      width: 250, // Size of the QR code
+      margin: 1,
       color: {
         dark: '#000000',
         light: '#ffffff'
       }
     });
 
-    // 2. Use Sharp to put the QR code on top of the frame
-    // We assume the frame is roughly 300x300 or 400x400
-    await sharp(framePath)
-      .composite([{ 
+    // 2. Layering: Create #081540 background, add QR, then add Frame on top
+    await sharp({
+      create: {
+        width: frameMetadata.width,
+        height: frameMetadata.height,
+        channels: 4,
+        background: '#081540' // Set background to your requested color
+      }
+    })
+    .composite([
+      { 
         input: qrBuffer, 
-        top: -25,  // Adjust these coordinates to center the QR in your frame
+        top: 25,  // Position the QR code
+        left: 25 
+      },
+      { 
+        input: framePath, // Frame is added LAST, making it the top layer
+        top: 0, 
         left: 0 
-      }])
-      .toFile(filePath);
+      }
+    ])
+    .toFile(filePath);
 
-    // 3. Send via WhatsApp
+    // 3. Send to WhatsApp
     const publicUrl = `https://${process.env.RENDER_EXTERNAL_HOSTNAME}/${fileName}`;
 
     await axios.post(`https://graph.facebook.com/v21.0/${phoneId}/messages`, {
@@ -118,13 +134,13 @@ async function sendQrMessage(to, phoneId, qrData, caption, frameFileName) {
       headers: { Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}` } 
     });
 
-    console.log(`Success: Sent framed QR ${frameFileName} to ${to}`);
+    console.log(`Success: Sent framed QR (${frameFileName}) to ${to}`);
   } catch (err) {
     console.error("Error creating framed QR:", err);
   }
 }
 
-// 4) Helper: Send +1 Button (Unchanged)
+// 4) Helper: Send +1 Button
 async function sendPlusOneButton(to, phoneId) {
   await axios.post(`https://graph.facebook.com/v21.0/${phoneId}/messages`, {
     messaging_product: "whatsapp",
@@ -144,31 +160,30 @@ async function sendPlusOneButton(to, phoneId) {
   });
 }
 
-// Admin API
-app.get("/messages", (req, res) => res.json(messagesLog.slice(-50)));
-
-// Send Manual Reply
+// Manual Admin Reply API
 app.post("/reply", async (req, res) => {
-    const { number, replyMessage } = req.body;
-    const phoneId = process.env.PHONE_NUMBER_ID; 
-    const token = process.env.WHATSAPP_TOKEN;
-  
-    if (!phoneId || !token) return res.status(500).json({ success: false });
-  
-    try {
-      await axios.post(`https://graph.facebook.com/v21.0/${phoneId}/messages`, {
-          messaging_product: "whatsapp",
-          recipient_type: "individual",
-          to: number,
-          type: "text",
-          text: { body: replyMessage }
-        }, { headers: { Authorization: `Bearer ${token}` } }
-      );
-      res.json({ success: true });
-    } catch (err) {
-      res.status(400).json({ success: false, error: err.message });
-    }
-  });
+  const { number, replyMessage } = req.body;
+  const phoneId = process.env.PHONE_NUMBER_ID; 
+  const token = process.env.WHATSAPP_TOKEN;
+
+  if (!phoneId || !token) return res.status(500).json({ success: false });
+
+  try {
+    await axios.post(`https://graph.facebook.com/v21.0/${phoneId}/messages`, {
+        messaging_product: "whatsapp",
+        recipient_type: "individual",
+        to: number,
+        type: "text",
+        text: { body: replyMessage }
+      }, { headers: { Authorization: `Bearer ${token}` } }
+    );
+    res.json({ success: true });
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+app.get("/messages", (req, res) => res.json(messagesLog.slice(-50)));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
