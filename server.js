@@ -88,11 +88,11 @@ async function sendQrMessage(to, phoneId, qrData, caption, frameFileName) {
     // 1. Generate QR Code as a Buffer (not a file yet)
     // We make it slightly smaller than the frame to fit in the white area
     const qrBuffer = await QRCode.toBuffer(qrData, {
-      width: 220, // Adjust this size to fit your frame's white box
+      width: 240, // Adjust this size to fit your frame's white box
       margin: 1,
       color: {
-        dark: '#000000',
-        light: '#ffffff'
+        dark: '#081540',
+        light: '#081540'
       }
     });
 
@@ -101,7 +101,7 @@ async function sendQrMessage(to, phoneId, qrData, caption, frameFileName) {
     await sharp(framePath)
       .composite([{ 
         input: qrBuffer, 
-        top: 45,  // Adjust these coordinates to center the QR in your frame
+        top: 25,  // Adjust these coordinates to center the QR in your frame
         left: 40 
       }])
       .toFile(filePath);
