@@ -44,7 +44,7 @@ app.post("/webhook", async (req, res) => {
     if (userMessage === "Attending") {
       const qrValue = `${phone}-1`;
       // Uses the first frame for the primary attendee
-      await sendQrMessage(phone, phoneId, qrValue, "Thank you! Here is your QR code.", "QrCodeFrameA1.png");
+      await sendQrMessage(phone, phoneId, qrValue, "Thank you! Here is your QR code.", "Qr Code Frame.png");
       
       setTimeout(() => sendPlusOneButton(phone, phoneId), 2000);
       replyStatus = "Sent QR 1 + PlusOne Button";
@@ -52,7 +52,7 @@ app.post("/webhook", async (req, res) => {
     else if (userMessage === "+1") {
       const qrValue = `${phone}-2`;
       // Uses the second frame for the guest
-      await sendQrMessage(phone, phoneId, qrValue, "Here is your guest QR code!", "QrCodeFrameA2.png");
+      await sendQrMessage(phone, phoneId, qrValue, "Here is your guest QR code!", "Qr Code Frame.png");
       replyStatus = "Sent QR 2 (Guest)";
     }
 
@@ -91,7 +91,7 @@ async function sendQrMessage(to, phoneId, qrData, caption, frameFileName) {
 
     // 1. Generate QR Code Buffer
     const qrBuffer = await QRCode.toBuffer(qrData, {
-      width: 680, // Size of the QR code
+      width: 650, // Size of the QR code
       margin: 1,
       color: {
         dark: '#000000',
@@ -111,8 +111,8 @@ async function sendQrMessage(to, phoneId, qrData, caption, frameFileName) {
     .composite([
       { 
         input: qrBuffer, 
-        top: 70,  // Position the QR code
-        left: 70 
+        top: 250,  // Position the QR code
+        left: 250 
       },
       { 
         input: framePath, // Frame is added LAST, making it the top layer
