@@ -111,7 +111,7 @@ async function sendQrMessage(to, phoneId, qrData, caption, frameFileName) {
     .composite([
       { 
         input: qrBuffer, 
-        top: 25,  // Position the QR code
+        top: 20,  // Position the QR code
         left: 25 
       },
       { 
