@@ -91,8 +91,8 @@ async function sendQrMessage(to, phoneId, qrData, caption, frameFileName) {
       width: 240, // Adjust this size to fit your frame's white box
       margin: 1,
       color: {
-        dark: '#081540',
-        light: '#081540'
+        dark: '#000000',
+        light: '#ffffff'
       }
     });
 
