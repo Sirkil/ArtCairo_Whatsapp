@@ -16,8 +16,8 @@
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "googleapis": "^157.0.0",
-    "sharp": "^0.34.3",
-    "qrcode": "^1.5.4"
+    "qrcode": "^1.5.4",
+    "sharp": "^0.34.5"
   },
   "description": ""
 }
