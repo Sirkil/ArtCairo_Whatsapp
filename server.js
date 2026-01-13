@@ -41,7 +41,7 @@ app.post("/webhook", async (req, res) => {
     if (userMessage === "Attending") {
       const qrValue = `${phone}-1`;
       // Ensure your file in assets is named exactly QrCodeFrameA1.png or change this string
-      await sendQrMessage(phone, phoneId, qrValue, "Perfect! We’re excited to welcome you 🎉\nPlease find your personal QR code below for entry to the event.\n⚠️ This invitation is personal and strictly non-transferable.", "QrCodeFrameA1.png");
+      await sendQrMessage(phone, phoneId, qrValue, "Perfect! We’re excited to welcome you 🎉\nPlease find your personal QR code for entry to the event.\n⚠️ This invitation is personal and strictly non-transferable.", "QrCodeFrameA1.png");
       
       // Delaying the +1 button to ensure it arrives after the image
       setTimeout(() => sendPlusOneButton(phone, phoneId), 3000);
