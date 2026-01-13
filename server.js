@@ -41,7 +41,7 @@ app.post("/webhook", async (req, res) => {
     if (userMessage === "Attending") {
       const qrValue = `${phone}-1`;
       // Ensure your file in assets is named exactly QrCodeFrameA1.png or change this string
-      await sendQrMessage(phone, phoneId, qrValue, "Perfect! We’re excited to welcome you 🎉\nPlease find your personal QR code for entry to the event.\n⚠️ This invitation is personal and strictly non-transferable.", "QrCodeFrameA1.png");
+      await sendQrMessage(phone, phoneId, qrValue, "Perfect. We are pleased to confirm your attendance.\nPlease find below your *personal QR code, which will be required for entry to the event*.\n*Important:*\nThis invitation is *personal* and *strictly non-transferable*.", "QrCodeFrameA1.png");
       
       // Delaying the +1 button to ensure it arrives after the image
       setTimeout(() => sendPlusOneButton(phone, phoneId), 3000);
@@ -49,11 +49,11 @@ app.post("/webhook", async (req, res) => {
     } 
     else if (userMessage === "Invite a Guest") {
       const qrValue = `${phone}-2`;
-      await sendQrMessage(phone, phoneId, qrValue, "Here’s the QR code for your accompanying guest 🎟️\nPlease note that this QR code is linked to your invitation and is valid for one guest only.", "QrCodeFrameA2.png");
+      await sendQrMessage(phone, phoneId, qrValue, "Below is the *QR code for your accompanying guest*.\n*Please note:*\nThis QR code is *linked to your invitation* and is *valid for one guest only*.", "QrCodeFrameA2.png");
       replyStatus = "Sent QR 2 (Guest)";
     }
     else if (userMessage === "Not Attending") {
-      const declineMessage = "Thank you for letting us know.\nWe’ll miss having you with us, and we hope to welcome you at a future event ✨";
+      const declineMessage = "Thank you for informing us.\nWe regret that you will not be able to attend and hope to welcome you at one of our *future events*.";
       await sendTextMessage(phone, phoneId, declineMessage); // This will now work with the function below
       replyStatus = "Sent Decline Message";
     }
@@ -168,7 +168,7 @@ async function sendPlusOneButton(to, phoneId) {
         type: "interactive",
         interactive: {
           type: "button",
-          body: { text: "Would you like to extend your invitation to an accompanying guest?" },
+          body: { text: "Would you like to extend your invitation to *one accompanying guest*?" },
           action: {
             buttons: [{ type: "reply", reply: { id: "add_guest", title: "Invite a Guest" } }]
           }
