@@ -170,7 +170,7 @@ async function sendPlusOneButton(to, phoneId) {
           type: "button",
           body: { text: "Would you like to extend your invitation to an accompanying guest?" },
           action: {
-            buttons: [{ type: "reply", reply: { id: "add_guest", title: "Invite Accompanying Guest" } }]
+            buttons: [{ type: "reply", reply: { id: "add_guest", title: "Invite Guest" } }]
           }
         }
       }, { 
