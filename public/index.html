@@ -5,156 +5,43 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WhatsApp Webhook Interface</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      display: flex;
-      height: 100vh;
-      background-color: #f0f2f5;
-    }
-    .container {
-      display: flex;
-      width: 100%;
-      max-width: 1200px;
-      margin: 0 auto;
-      background: white;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    .sidebar {
-      width: 30%;
-      border-right: 1px solid #ddd;
-      overflow-y: auto;
-      background: #f6f6f6;
-    }
-    .message-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-    .message-item {
-      padding: 15px;
-      border-bottom: 1px solid #eee;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .message-item:hover {
-      background: #e0e0e0;
-    }
-    .message-item.active {
-      background: #d1e7ff;
-    }
-    .message-item .name {
-      font-weight: bold;
-      color: #111;
-    }
-    .message-item .phone {
-      font-size: 0.9em;
-      color: #555;
-    }
-    .message-item .preview {
-      font-size: 0.9em;
-      color: #777;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .chat-area {
-      width: 70%;
-      display: flex;
-      flex-direction: column;
-    }
-    .chat-header {
-      padding: 15px;
-      background: #075e54;
-      color: white;
-      font-weight: bold;
-    }
-    .chat-messages {
-      flex: 1;
-      padding: 20px;
-      overflow-y: auto;
-      background: #e5ddd5;
-    }
-    .message {
-      max-width: 60%;
-      margin: 10px;
-      padding: 10px;
-      border-radius: 8px;
-      position: relative;
-    }
-    .message.received {
-      background: #fff;
-      margin-right: auto;
-    }
-    .message.sent {
-      background: #dcf8c6;
-      margin-left: auto;
-    }
-    .message-input {
-      display: flex;
-      padding: 15px;
-      background: #f0f0f0;
-      border-top: 1px solid #ddd;
-    }
-    .message-input input {
-      flex: 1;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 20px;
-      outline: none;
-    }
-    .message-input button {
-      margin-left: 10px;
-      padding: 10px 20px;
-      background: #075e54;
-      color: white;
-      border: none;
-      border-radius: 20px;
-      cursor: pointer;
-    }
-    .message-input button:hover {
-      background: #064c44;
+    /* ... (Keep your existing styles) ... */
+    body { font-family: Arial, sans-serif; margin: 0; display: flex; height: 100vh; background-color: #f0f2f5; }
+    .container { display: flex; width: 100%; max-width: 1200px; margin: 0 auto; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    .sidebar { width: 30%; border-right: 1px solid #ddd; overflow-y: auto; background: #f6f6f6; }
+    .message-list { list-style: none; padding: 0; margin: 0; }
+    .message-item { padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; transition: background 0.2s; }
+    .message-item:hover { background: #e0e0e0; }
+    .message-item.active { background: #d1e7ff; }
+    .message-item .name { font-weight: bold; color: #111; }
+    .message-item .phone { font-size: 0.8em; color: #555; }
+    
+    .chat-area { width: 70%; display: flex; flex-direction: column; }
+    .chat-header { padding: 15px; background: #075e54; color: white; font-weight: bold; }
+    .chat-messages { flex: 1; padding: 20px; overflow-y: auto; background: #e5ddd5; display: flex; flex-direction: column; }
+    
+    .message { max-width: 60%; margin: 5px 10px; padding: 8px 12px; border-radius: 8px; font-size: 0.95em; line-height: 1.4; position: relative; }
+    .message.received { background: #fff; align-self: flex-start; }
+    .message.sent { background: #dcf8c6; align-self: flex-end; }
+    
+    /* 🕒 New Timestamp Style */
+    .time {
+      font-size: 0.7em;
+      color: #888;
+      margin-top: 4px;
+      text-align: right;
+      display: block;
     }
 
-    /* 🔒 Overlay styles */
-    #lockScreen {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      backdrop-filter: blur(10px);
-      background: rgba(255,255,255,0.3);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-    }
-    #lockBox {
-      background: white;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.3);
-      text-align: center;
-      width: 300px;
-    }
-    #lockBox input {
-      width: 100%;
-      padding: 10px;
-      margin: 10px 0;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-    }
-    #lockBox button {
-      width: 100%;
-      padding: 10px;
-      background: #075e54;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    #lockBox button:hover {
-      background: #064c44;
-    }
+    .message-input { display: flex; padding: 15px; background: #f0f0f0; border-top: 1px solid #ddd; }
+    .message-input input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 20px; outline: none; }
+    .message-input button { margin-left: 10px; padding: 10px 20px; background: #075e54; color: white; border: none; border-radius: 20px; cursor: pointer; }
+
+    /* 🔒 Lock screen styles (Keep yours) */
+    #lockScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; backdrop-filter: blur(10px); background: rgba(255,255,255,0.3); display: flex; justify-content: center; align-items: center; z-index: 9999; }
+    #lockBox { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.3); text-align: center; width: 300px; }
+    #lockBox input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; }
+    #lockBox button { width: 100%; padding: 10px; background: #075e54; color: white; border: none; border-radius: 5px; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -172,7 +59,6 @@
     </div>
   </div>
 
-  <!-- 🔒 Password Overlay -->
   <div id="lockScreen">
     <div id="lockBox">
       <h2>Enter Password</h2>
@@ -187,44 +73,66 @@
     let selectedNumber = null;
 
     async function fetchMessages() {
-  const response = await fetch('/messages');
-  messagesData = await response.json();
-  
-  // 1. Update the sidebar list
-  const messageList = document.getElementById('messageList');
-  const uniqueContacts = [...new Map(messagesData.map(m => [m.number, m])).values()];
-  
-  messageList.innerHTML = uniqueContacts.map(m => `
-    <li class="message-item ${selectedNumber === m.number ? 'active' : ''}" 
-        onclick="selectConversation('${m.number}', '${m.name}')">
-      <div class="name">${m.name}</div>
-      <div class="phone">${m.number}</div>
-    </li>
-  `).join('');
+      try {
+        const response = await fetch('/messages');
+        const data = await response.json();
+        
+        // Update data only if it changed to prevent unnecessary UI flickers
+        if (JSON.stringify(data) !== JSON.stringify(messagesData)) {
+          messagesData = data;
+          renderSidebar();
+          if (selectedNumber) {
+            renderChat(selectedNumber);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch messages:", err);
+      }
+    }
 
-  // 2. If a conversation is open, refresh the chat bubbles
-  if (selectedNumber) {
-    renderChat(selectedNumber);
-  }
-}
+    function renderSidebar() {
+      const messageList = document.getElementById('messageList');
+      // Group unique contacts and show the latest one
+      const uniqueContacts = [...new Map(messagesData.map(m => [m.number, m])).values()];
+      
+      messageList.innerHTML = uniqueContacts.map(m => `
+        <li class="message-item ${selectedNumber === m.number ? 'active' : ''}" 
+            onclick="selectConversation('${m.number}', '${m.name}')">
+          <div class="name">${m.name || 'Unknown'}</div>
+          <div class="phone">${m.number}</div>
+        </li>
+      `).join('');
+    }
 
-function selectConversation(number, name) {
-  selectedNumber = number;
-  document.getElementById('chatHeader').textContent = `${name} (${number})`;
-  renderChat(number);
-}
+    function selectConversation(number, name) {
+      selectedNumber = number;
+      document.getElementById('chatHeader').textContent = `${name} (${number})`;
+      renderChat(number);
+    }
 
-function renderChat(number) {
-  const chatMessages = document.getElementById('chatMessages');
-  const filtered = messagesData.filter(m => m.number === number);
-  
-  chatMessages.innerHTML = filtered.map(msg => `
-    <div class="message ${msg.replyStatus.startsWith('Sent') ? 'sent' : 'received'}">
-      ${msg.message}
-    </div>
-  `).join('');
-  chatMessages.scrollTop = chatMessages.scrollHeight;
-}
+    function renderChat(number) {
+      const chatMessages = document.getElementById('chatMessages');
+      const filtered = messagesData.filter(m => m.number === number);
+      
+      chatMessages.innerHTML = filtered.map(msg => {
+        // Fix: Detect sent vs received more reliably
+        const isSent = msg.replyStatus && msg.replyStatus.toLowerCase().includes('sent');
+        
+        // Fix: Format time (Assumes server sends msg.timestamp)
+        const timeLabel = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
+        const dateLabel = msg.timestamp ? new Date(msg.timestamp).toLocaleDateString() : '';
+
+        return `
+          <div class="message ${isSent ? 'sent' : 'received'}">
+            <div class="text">${msg.message}</div>
+            <span class="time">${dateLabel} ${timeLabel}</span>
+          </div>
+        `;
+      }).join('');
+      
+      // Auto-scroll to latest message
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
 
     async function sendReply() {
       if (!selectedNumber) {
@@ -234,6 +142,7 @@ function renderChat(number) {
       const replyInput = document.getElementById('replyInput');
       const message = replyInput.value.trim();
       if (!message) return;
+
       try {
         const response = await fetch('/reply', {
           method: 'POST',
@@ -241,31 +150,26 @@ function renderChat(number) {
           body: JSON.stringify({ number: selectedNumber, replyMessage: message })
         });
         const result = await response.json();
+        
         if (result.success) {
-          const chatMessages = document.getElementById('chatMessages');
-          const div = document.createElement('div');
-          div.className = 'message sent';
-          div.textContent = message;
-          chatMessages.appendChild(div);
-          chatMessages.scrollTop = chatMessages.scrollHeight;
           replyInput.value = '';
-          fetchMessages(); // Refresh message list
+          // Refresh messages immediately after sending
+          await fetchMessages();
         } else {
           alert('Error sending reply: ' + result.error);
         }
       } catch (err) {
-        alert('Error sending reply: ' + err.message);
+        alert('Error: ' + err.message);
       }
     }
 
-    // Fetch messages every 5 seconds
+    // Interval to check for new messages
     fetchMessages();
-    setInterval(fetchMessages, 5000);
+    setInterval(fetchMessages, 3000);
 
-    // 🔑 Unlock logic
     function unlockPage() {
       const input = document.getElementById("pagePassword").value;
-      if (input === "Sirkil.com2013") { // your password
+      if (input === "Sirkil.com2013") {
         document.getElementById("lockScreen").style.display = "none";
       } else {
         document.getElementById("error").textContent = "Wrong password!";

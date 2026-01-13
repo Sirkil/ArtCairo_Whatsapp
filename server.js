@@ -49,7 +49,7 @@ app.post("/webhook", async (req, res) => {
     } 
     else if (userMessage === "+1") {
       const qrValue = `${phone}-2`;
-      await sendQrMessage(phone, phoneId, qrValue, "Here is your guest QR code!", "QrCodeFrameA1.png");
+      await sendQrMessage(phone, phoneId, qrValue, "Here is your guest QR code!", "QrCodeFrameA2.png");
       replyStatus = "Sent QR 2 (Guest)";
     }
 
