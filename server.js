@@ -41,7 +41,7 @@ app.post("/webhook", async (req, res) => {
     if (userMessage === "Attending") {
       const qrValue = `${phone}-1`;
       // Ensure your file in assets is named exactly QrCodeFrameA1.png or change this string
-      await sendQrMessage(phone, phoneId, qrValue, "Thank you! Here is your QR code.", "QrCodeFrameA1.png");
+      await sendQrMessage(phone, phoneId, qrValue, "Perfect! We’re excited to welcome you 🎉\nPlease find your personal QR code below for entry to the event.\n⚠️ This invitation is personal and strictly non-transferable.", "QrCodeFrameA1.png");
       
       // Delaying the +1 button to ensure it arrives after the image
       setTimeout(() => sendPlusOneButton(phone, phoneId), 3000);
@@ -49,8 +49,13 @@ app.post("/webhook", async (req, res) => {
     } 
     else if (userMessage === "+1") {
       const qrValue = `${phone}-2`;
-      await sendQrMessage(phone, phoneId, qrValue, "Here is your guest QR code!", "QrCodeFrameA2.png");
+      await sendQrMessage(phone, phoneId, qrValue, "Here’s the QR code for your accompanying guest 🎟️\nPlease note that this QR code is linked to your invitation and is valid for one guest only.", "QrCodeFrameA2.png");
       replyStatus = "Sent QR 2 (Guest)";
+    }
+    else if (userMessage === "Not Attending") {
+      const declineMessage = "Thank you for letting us know.\n\nWe’ll miss having you with us, and we hope to welcome you at a future event ✨";
+      await sendTextMessage(phone, phoneId, declineMessage);
+      replyStatus = "Sent Decline Message";
     }
 
     if (GSHEET_WEBHOOK_URL) {
@@ -147,9 +152,9 @@ async function sendPlusOneButton(to, phoneId) {
         type: "interactive",
         interactive: {
           type: "button",
-          body: { text: "Would you like to register a guest (+1)?" },
+          body: { text: "Would you like to extend your invitation to an accompanying guest?" },
           action: {
-            buttons: [{ type: "reply", reply: { id: "add_guest", title: "+1" } }]
+            buttons: [{ type: "reply", reply: { id: "add_guest", title: "Invite Accompanying Guest" } }]
           }
         }
       }, { 
