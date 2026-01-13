@@ -54,7 +54,7 @@ app.post("/webhook", async (req, res) => {
     }
     else if (userMessage === "Not Attending") {
       const declineMessage = "Thank you for letting us know.\n\nWe’ll miss having you with us, and we hope to welcome you at a future event ✨";
-      await sendTextMessage(phone, phoneId, declineMessage);
+      await sendTextMessage(phone, phoneId, declineMessage); // This will now work with the function below
       replyStatus = "Sent Decline Message";
     }
 
@@ -141,6 +141,22 @@ async function sendQrMessage(to, phoneId, qrData, caption, frameFileName) {
     console.log(`Successfully sent framed QR to ${to}`);
   } catch (err) {
     console.error("IMAGE PROCESSING ERROR:", err);
+  }
+}
+
+async function sendTextMessage(to, phoneId, text) {
+  try {
+    await axios.post(`https://graph.facebook.com/v21.0/${phoneId}/messages`, {
+      messaging_product: "whatsapp",
+      to: to,
+      type: "text",
+      text: { body: text }
+    }, { 
+      headers: { Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}` } 
+    });
+    console.log(`Text message sent to ${to}`);
+  } catch (err) {
+    console.error("TEXT MESSAGE ERROR:", err.response?.data || err.message);
   }
 }
 
