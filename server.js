@@ -78,18 +78,18 @@ app.post("/webhook", async (req, res) => {
   try {
     if (userMessage === "Attending") {
       const qrValue = `${phone}-1`;
-      await sendQrMessage(phone, phoneId, qrValue, "We are pleased to confirm your attendance...", "QrCodeFrameA1.png");
+      await sendQrMessage(phone, phoneId, qrValue, "We are pleased to confirm your attendance at *Art Cairo*\n\n*Event Details:*\n*Date:Thursday 22 January*\n*Location:Grand Egyptian Museum*\n*Time:2:00 PM – 10:00 PM*\n*VIP Reception:8:00 PM*\n\nHere is your *personal QR code, which will be required for event entry*.\n\n*Important:*\nThis invitation is *personal* and *strictly non-transferable*.", "QrCodeFrameA1.png");
       
       setTimeout(() => sendPlusOneButton(phone, phoneId), 3000);
       replyStatus = "Sent QR 1 + PlusOne Button";
     } 
     else if (userMessage === "Invite a Guest") {
       const qrValue = `${phone}-2`;
-      await sendQrMessage(phone, phoneId, qrValue, "Here is the QR code for your guest...", "QrCodeFrameA2.png");
+      await sendQrMessage(phone, phoneId, qrValue, "Here is the *QR code for your accompanying guest*.\n\n*Please note:*\nThis QR code is *linked to your invitation* and is *valid for one guest only*.\n\n*Event Details:*\n*Date:Thursday 22 January*\n*Location:Grand Egyptian Museum*\n*Time:2:00 PM – 10:00 PM*\n*VIP Reception:8:00 PM*.", "QrCodeFrameA2.png");
       replyStatus = "Sent QR 2 (Guest)";
     }
     else if (userMessage === "Not Attending") {
-      await sendTextMessage(phone, phoneId, "Thank you for informing us.");
+      await sendTextMessage(phone, phoneId, "Thank you for informing us.\n\nWe regret that you will not be able to attend and hope to welcome you at a *future Art Cairo event*.");
       replyStatus = "Sent Decline Message";
     }
 
