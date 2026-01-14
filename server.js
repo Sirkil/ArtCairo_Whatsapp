@@ -11,6 +11,7 @@ app.use(express.json());
 app.use(express.static('public')); 
 
 const GSHEET_WEBHOOK_URL = process.env.GSHEET_WEBHOOK_URL;
+// This array holds the chat history in memory
 const messagesLog = [];
 
 app.get("/webhook", (req, res) => {
@@ -21,46 +22,89 @@ app.get("/webhook", (req, res) => {
   }
 });
 
+// Route for the frontend to fetch the history
+app.get("/messages", (req, res) => {
+  res.json(messagesLog);
+});
+
+// Route for manual replies from the admin panel
+app.post("/reply", async (req, res) => {
+  const { number, replyMessage } = req.body;
+  const phoneId = process.env.PHONE_NUMBER_ID; // Ensure this is in your .env
+
+  try {
+    await sendTextMessage(number, phoneId, replyMessage);
+    
+    // Log the sent message
+    messagesLog.push({
+      name: "Admin",
+      number: number,
+      message: replyMessage,
+      replyStatus: "sent",
+      timestamp: Date.now()
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 app.post("/webhook", async (req, res) => {
   res.sendStatus(200);
   const entry = req.body?.entry?.[0];
   const changes = entry?.changes?.[0];
   const value = changes?.value;
   const message = value?.messages?.[0];
-  const metadata = value?.metadata;
 
   if (!message) return;
 
   const phone = message.from;
-  const phoneId = metadata.phone_number_id; 
+  const phoneId = value?.metadata?.phone_number_id; 
   const userMessage = message.button?.text || message.interactive?.button_reply?.title || message.text?.body;
+  const userName = value.contacts?.[0]?.profile?.name || "Guest";
+
+  // 1. Log the incoming message IMMEDIATELY
+  messagesLog.push({ 
+    name: userName, 
+    number: phone, 
+    message: userMessage, 
+    replyStatus: "received", 
+    timestamp: Date.now()
+  });
 
   let replyStatus = "Logged";
 
   try {
     if (userMessage === "Attending") {
       const qrValue = `${phone}-1`;
-      // Ensure your file in assets is named exactly QrCodeFrameA1.png or change this string
-      await sendQrMessage(phone, phoneId, qrValue, "Perfect. We are pleased to confirm your attendance.\nPlease find below your *personal QR code, which will be required for entry to the event*.\n*Important:*\nThis invitation is *personal* and *strictly non-transferable*.", "QrCodeFrameA1.png");
+      await sendQrMessage(phone, phoneId, qrValue, "We are pleased to confirm your attendance...", "QrCodeFrameA1.png");
       
-      // Delaying the +1 button to ensure it arrives after the image
       setTimeout(() => sendPlusOneButton(phone, phoneId), 3000);
       replyStatus = "Sent QR 1 + PlusOne Button";
     } 
     else if (userMessage === "Invite a Guest") {
       const qrValue = `${phone}-2`;
-      await sendQrMessage(phone, phoneId, qrValue, "Below is the *QR code for your accompanying guest*.\n*Please note:*\nThis QR code is *linked to your invitation* and is *valid for one guest only*.", "QrCodeFrameA2.png");
+      await sendQrMessage(phone, phoneId, qrValue, "Here is the QR code for your guest...", "QrCodeFrameA2.png");
       replyStatus = "Sent QR 2 (Guest)";
     }
     else if (userMessage === "Not Attending") {
-      const declineMessage = "Thank you for informing us.\nWe regret that you will not be able to attend and hope to welcome you at one of our *future events*.";
-      await sendTextMessage(phone, phoneId, declineMessage); // This will now work with the function below
+      await sendTextMessage(phone, phoneId, "Thank you for informing us.");
       replyStatus = "Sent Decline Message";
     }
 
+    // Log the automated reply in the internal log
+    messagesLog.push({
+        name: "System",
+        number: phone,
+        message: replyStatus,
+        replyStatus: "sent",
+        timestamp: Date.now()
+    });
+
     if (GSHEET_WEBHOOK_URL) {
       await axios.post(GSHEET_WEBHOOK_URL, {
-        name: value.contacts?.[0]?.profile?.name || "Guest",
+        name: userName,
         number: phone,
         message: userMessage,
         replyStatus: replyStatus,
@@ -70,13 +114,6 @@ app.post("/webhook", async (req, res) => {
   } catch (err) {
     console.error("WEBHOOK ERROR:", err.message);
   }
-
-  messagesLog.push({ 
-    name: value.contacts?.[0]?.profile?.name || "Guest", 
-    number: phone, 
-    message: userMessage, 
-    replyStatus 
-  });
 });
 
 async function sendQrMessage(to, phoneId, qrData, caption, frameFileName) {
